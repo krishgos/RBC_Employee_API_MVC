@@ -38,6 +38,32 @@ namespace RBC_Employee_API_MVC.Controllers
             return Ok(emp);
         }
 
+        /***********************************************************************************
+         * Following is an example of running two Tasks Concurrently, when we have multiple Tasks
+         * with await, where the tasks are waited sequentially
+         * 
+         * If employeeNumber1 and employeeNumber2 are independent, and you want to start both calls 
+         * concurrently, use Task without await immediately:  
+         * **********************************************************************************/
+
+        public async Task<IActionResult> GetSameEmployee(int employeeNumber1, int employeeNumber2)
+        {
+            _logger.LogInformation($"Searching Employees with employeeNumbers = {employeeNumber1}, {employeeNumber2} ...");
+
+            // Start both tasks concurrently
+            var emp1Task = context.Employees.FindAsync(employeeNumber1);
+            var emp2Task = context.Employees.FindAsync(employeeNumber2);
+
+            // Await both
+            Employee? emp1 = await emp1Task;
+            Employee? emp2 = await emp2Task;
+
+            if (emp1 != emp2)
+                return NotFound();
+
+            return Ok(emp1); // or emp2, since you're checking they are equal
+        }
+
         // GET: api/employees/search?name=John
         [HttpGet("search")]
         public IActionResult SearchByName([FromQuery] string name)
